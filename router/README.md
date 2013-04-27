@@ -1,4 +1,4 @@
-nas Cookbook
+router Cookbook
 ============
 This cookbook configures a server as router.
 
