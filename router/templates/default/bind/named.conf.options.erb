@@ -1,0 +1,58 @@
+acl "local-area" {
+    192.168.2.0/24;
+    127.0.0.1;
+};
+
+controls {
+    inet	    127.0.0.1 allow { 127.0.0.1; };
+};
+
+options {
+    directory       "/var/cache/bind";
+
+    allow-query     { local-area; };
+    allow-recursion { local-area; };
+    allow-transfer  { local-area; };
+
+    version         "Ubuntu Special :-)";
+    forwarders      { 129.250.35.250; 129.250.35.251; 8.8.8.8; 8.8.4.4; };
+    forward         only;
+
+    root-delegation-only;
+ 
+    dnssec-validation auto;
+
+    auth-nxdomain   no;
+};
+
+logging {
+    # ログの場所を変える際は，AppArmor の設定も変更要
+    channel default_log {
+        file "/var/log/named/default.log" versions 10 size 10m;
+        severity info;
+        print-category yes;
+        print-severity yes;
+        print-time     yes;
+    };
+
+    channel update_log {
+        file "/var/log/named/update.log" versions 10 size 10m;
+        severity info;
+        print-category yes;
+        print-severity yes;
+        print-time     yes;
+    };
+        
+    channel security_log {
+        file "/var/log/named/auth.log" versions 10 size 10m;
+        severity info;
+        print-category yes;
+        print-severity yes;
+        print-time     yes;
+    };
+
+    category lame-servers   { default_log; };
+    category default        { default_log; };
+    category update         { update_log; };
+    category security       { security_log; };
+};

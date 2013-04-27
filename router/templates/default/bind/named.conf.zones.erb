@@ -1,0 +1,45 @@
+view "internal" {
+    match-clients { local-area; };
+
+    zone "." IN {
+        type		hint;
+        file        	"/etc/bind/db.root";
+    };
+
+    zone "localhost" IN {
+        type         	master;
+        file         	"/etc/bind/db.local";
+    };
+
+    zone "127.in-addr.arpa" IN {
+        type         	master;
+        file         	"/etc/bind/db.127";
+    };
+    zone "green-rabbit.net" IN {
+        type         	master;
+        file           "/var/cache/bind/db.green-rabbit.net-internal";
+        allow-update 	{ localhost; };
+    };
+
+    zone "2.168.192.in-addr.arpa" IN {
+        type         	master;
+        allow-update 	{ localhost; };
+        file         	"/var/cache/bind/db.2.168.192";
+    };
+};
+
+# view "external" {
+#     match-clients { any; };
+
+#     zone "green-rabbit.net" IN {
+#         type         master;
+#         allow-update { localhost; };
+#         file         "/var/cache/bind/db.green-rabbit.net-external";
+#     };
+
+#     zone "acapulco.dyndns.org" IN {
+#         type         master;
+#         allow-update { localhost; };
+#         file         "/var/cache/bind/db.acapulco.dyndns.org-external";
+#     };
+# };
