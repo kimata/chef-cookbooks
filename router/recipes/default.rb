@@ -61,7 +61,7 @@ template '/etc/bind/named.conf.zones' do
   owner     'bind'
   group     'bind'
   mode      '0644'
-  notifies :restart, 'service[bind]'
+  notifies  :restart, 'service[bind]'
 end
 
 template '/etc/bind/db.root' do
@@ -69,7 +69,7 @@ template '/etc/bind/db.root' do
   owner     'bind'
   group     'bind'
   mode      '0644'
-  notifies :restart, 'service[bind]'
+  notifies  :restart, 'service[bind]'
 end
 
 template '/etc/bind/db.local' do
@@ -77,7 +77,7 @@ template '/etc/bind/db.local' do
   owner     'bind'
   group     'bind'
   mode      '0644'
-  notifies :restart, 'service[bind]'
+  notifies  :restart, 'service[bind]'
 end
 
 template '/etc/bind/db.127' do
@@ -85,7 +85,7 @@ template '/etc/bind/db.127' do
   owner     'bind'
   group     'bind'
   mode      '0644'
-  notifies :restart, 'service[bind]'
+  notifies  :restart, 'service[bind]'
 end
 
 template '/etc/bind/db.green-rabbit.net-internal' do
@@ -117,6 +117,45 @@ link '/var/cache/bind/db.green-rabbit.net-internal' do
 end
 
 ################################################################################
+# btrfs
+package 'btrfs-tools'
+package 'liblzo2-dev'
+package 'libblkid-dev'
+
+git 'btrfs-progs' do
+  repository 'git://git.kernel.org/pub/scm/linux/kernel/git/mason/btrfs-progs.git'
+  destination '/tmp/make-btrfs-progs'
+  not_if    'btrfs --version | perl -ne "exit(\$1*1000 < 200) if /Btrfs v([\d.]+)/"'
+  action    :sync
+  notifies  :run, "execute[prepare-make-btrfs-progs]"
+end
+
+execute 'prepare-make-btrfs-progs' do
+  command   'apt-get --yes build-dep btrfs-tools'
+  action    :nothing
+  notifies  :run, "execute[make-btrfs-progs]"
+end
+
+execute 'make-btrfs-progs' do
+  command   'make -C /tmp/make-btrfs-progs all install'
+  action    :nothing
+  notifies  :run, "execute[clean-make-btrfs-progs]"
+end
+
+execute 'clean-make-btrfs-progs' do
+  command   'rm -rf /tmp/make-btrfs-progs'
+  action    :nothing
+end
+
+template '/etc/cron.weekly/btrfs-scrub' do
+  source    'mount/btrfs-scrub.erb'
+  owner     'root'
+  group     'root'
+  mode      '0755'
+  notifies  :checkout, "git[btrfs-progs]"
+end
+
+################################################################################
 # dhcp
 package 'isc-dhcp-server'
 
@@ -132,15 +171,15 @@ service 'dhcp' do
 end
 
 template '/etc/dhcp/dhcpd.conf' do
-  source 'dhcp/dhcpd.conf.erb'
+  source    'dhcp/dhcpd.conf.erb'
   owner     'dhcpd'
   group     'dhcpd'
   mode      '0644'
-  notifies :restart, 'service[dhcp]'
+  notifies  :restart, 'service[dhcp]'
 end
 
 template '/etc/dhcp/dhclient.conf' do
-  source 'dhcp/dhclient.conf.erb'
+  source    'dhcp/dhclient.conf.erb'
   owner     'root'
   group     'root'
   mode      '0644'
@@ -151,7 +190,7 @@ end
 package 'hdparm'
 
 template '/etc/hdparm.conf' do
-  source 'hdparm/hdparm.conf.erb'
+  source    'hdparm/hdparm.conf.erb'
   owner     'root'
   group     'root'
   mode      '0644'
@@ -165,34 +204,43 @@ directory '/etc/iptables' do
   owner     'root'
   group     'root'
   mode      '0755'
-  action :create
+  action    :create
 end
 
 template '/etc/iptables/rules.sh' do
-  source 'iptables/rules.sh.erb'
+  source    'iptables/rules.sh.erb'
   owner     'root'
   group     'root'
   mode      '0755'
-  notifies :run, 'execute[iptables]'
+  notifies  :run, 'execute[iptables]'
 end
 
 template '/etc/iptables/activate' do
-  source 'iptables/activate.erb'
+  source    'iptables/activate.erb'
   owner     'root'
   group     'root'
   mode      '0755'
 end
 
 template '/etc/iptables/inactivate' do
-  source 'iptables/inactivate.erb'
+  source    'iptables/inactivate.erb'
   owner     'root'
   group     'root'
   mode      '0755'
 end
 
 execute 'iptables' do
-  command '/etc/iptables/activate'
-  action :nothing
+  command   '/etc/iptables/activate'
+  action    :nothing
+end
+
+################################################################################
+# locate
+template '/etc/updatedb.conf' do
+  source    'locate/updatedb.conf.erb'
+  owner     'root'
+  group     'root'
+  mode      '0440'
 end
 
 ################################################################################
@@ -201,7 +249,7 @@ directory '/storage' do
   owner     'root'
   group     'root'
   mode      '0755'
-  action :create
+  action    :create
 end
 
 template '/etc/fstab' do
@@ -209,25 +257,25 @@ template '/etc/fstab' do
   owner     'root'
   group     'root'
   mode      '0440'
-  notifies :run, 'execute[mount]'
+  notifies  :run, 'execute[mount]'
 end
 
 execute 'mount' do
-  command 'mount -a'
-  action :nothing
+  command   'mount -a'
+  action    :nothing
 end
 
 ################################################################################
 # network
 template '/etc/hosts' do
-  source 'network/hosts.erb'
+  source    'network/hosts.erb'
   owner     'root'
   group     'root'
   mode      '0644'
 end
 
 template '/etc/network/interfaces' do
-  source 'network/interfaces.erb'
+  source    'network/interfaces.erb'
   owner     'root'
   group     'root'
   mode      '0644'
@@ -282,7 +330,14 @@ template '/etc/samba/smb.conf' do
   owner     'root'
   group     'root'
   mode      '0644'
-  notifies :restart, 'service[samba]'
+  notifies  :restart, 'service[samba]'
+end
+
+template '/etc/samba/dfree.zsh' do
+  source    'samba/dfree.zsh.erb'
+  owner     'root'
+  group     'root'
+  mode      '0755'
 end
 
 ################################################################################
@@ -306,14 +361,14 @@ template '/etc/ssh/sshd_config' do
   owner     'root'
   group     'root'
   mode      '0644'
-  notifies :restart, 'service[ssh]'
+  notifies  :restart, 'service[ssh]'
 end
 
 ################################################################################
 # sudo
 package 'sudo'
 template '/etc/sudoers' do
-  source 'sudo/sudoers.erb'
+  source    'sudo/sudoers.erb'
   owner     'root'
   group     'root'
   mode      '0440'
@@ -322,8 +377,8 @@ end
 ################################################################################
 # sysctl
 execute 'sysctl' do
-  command 'sysctl -p'
-  action :nothing
+  command   'sysctl -p'
+  action    :nothing
 end
 
 template '/etc/sysctl.conf' do
@@ -331,7 +386,7 @@ template '/etc/sysctl.conf' do
   owner     'root'
   group     'root'
   mode      '0440'
-  notifies :run, 'execute[sysctl]'
+  notifies  :run, 'execute[sysctl]'
 end
 
 ################################################################################
@@ -340,7 +395,7 @@ template '/etc/rc.local' do
   source    'system/rc.local.erb'
   owner     'root'
   group     'root'
-  mode      '0440'
+  mode      '0755'
 end
 
 ################################################################################
@@ -371,7 +426,6 @@ package 'binutils'
 package 'inotify-tools'
 package 'daemontools'
 
-package 'btrfs-tools'
 package 'smartmontools'
 
 package 'apache2'
@@ -380,5 +434,3 @@ package 'postfix'
 
 package 'ruby'
 
-package 'subversion'
-package 'git'

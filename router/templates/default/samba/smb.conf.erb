@@ -10,10 +10,10 @@
 
     hosts allow         = 192.168.2. 192.168.0. 127.
 
-    load printers       = no
-    printing            = bsd　
+    printing            = bsd
+    printcap name       = /dev/null
 
-    log file            = /var/log/samba/%m.log
+    log file            = /var/log/samba/log.%m
     max log size        = 1000
     log level           = 1
 
@@ -52,3 +52,11 @@
     writable            = yes
     create mask         = 0644
     directory mask      = 0755
+    
+    vfs objects         = recycle
+    recycle:repository  = /storage/.recycle/%u
+    recycle:keeptree    = yes
+    recycle:touch       = yes
+    recycle:versions    = yes
+    recycle:maxsize     = 0
+    recycle:exclude     = *.tmp
