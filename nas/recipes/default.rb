@@ -19,6 +19,45 @@
 #
 
 ################################################################################
+# btrfs
+package 'btrfs-tools'
+package 'liblzo2-dev'
+package 'libblkid-dev'
+
+git 'btrfs-progs' do
+  repository 'git://git.kernel.org/pub/scm/linux/kernel/git/mason/btrfs-progs.git'
+  destination '/tmp/make-btrfs-progs'
+  not_if    'btrfs --version | perl -ne "exit(\$1*1000 < 200) if /Btrfs v([\d.]+)/"'
+  action    :sync
+  notifies  :run, "execute[prepare-make-btrfs-progs]"
+end
+
+execute 'prepare-make-btrfs-progs' do
+  command   'apt-get --yes build-dep btrfs-tools'
+  action    :nothing
+  notifies  :run, "execute[make-btrfs-progs]"
+end
+
+execute 'make-btrfs-progs' do
+  command   'make -C /tmp/make-btrfs-progs all install'
+  action    :nothing
+  notifies  :run, "execute[clean-make-btrfs-progs]"
+end
+
+execute 'clean-make-btrfs-progs' do
+  command   'rm -rf /tmp/make-btrfs-progs'
+  action    :nothing
+end
+
+template '/etc/cron.weekly/btrfs-scrub' do
+  source    'mount/btrfs-scrub.erb'
+  owner     'root'
+  group     'root'
+  mode      '0755'
+  notifies  :checkout, "git[btrfs-progs]"
+end
+
+################################################################################
 # hdparm
 package 'hdparm'
 
@@ -97,6 +136,13 @@ template '/etc/samba/smb.conf' do
   notifies  :restart, 'service[samba]'
 end
 
+template '/etc/samba/dfree.zsh' do
+  source    'samba/dfree.zsh.erb'
+  owner     'root'
+  group     'root'
+  mode      '0755'
+end
+
 ################################################################################
 # ssh
 package 'openssh-client'
@@ -161,7 +207,6 @@ package 'binutils'
 package 'inotify-tools'
 package 'daemontools'
 
-package 'btrfs-tools'
 package 'smartmontools'
 
 package 'postfix'

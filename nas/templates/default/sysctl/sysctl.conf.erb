@@ -18,9 +18,9 @@ net.ipv4.conf.all.log_martians      = 1
 # ライトバックを遅延させられるメモリの割合
 vm.dirty_background_ratio           = 30
 vm.dirty_ratio                      = 60
-# フラッシュする間隔 (10時間)
-vm.dirty_writeback_centisecs        = 3600000
-# フラッシュされるまでの最大遅延 (10時間)
-vm.dirty_expire_centisecs           = 3600000
+# フラッシュする間隔 (1時間)
+vm.dirty_writeback_centisecs        = 360000
+# フラッシュされるまでの最大遅延 (1時間)
+vm.dirty_expire_centisecs           = 360000
 # パニックが発生したら1時間後にリブート
 kernel.panic                        = 3600
