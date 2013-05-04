@@ -18,6 +18,8 @@
 # limitations under the License.
 #
 
+package 'snmpd '
+
 ################################################################################
 # btrfs
 package 'btrfs-tools'
@@ -49,12 +51,13 @@ execute 'clean-make-btrfs-progs' do
   action    :nothing
 end
 
-template '/etc/cron.weekly/btrfs-scrub' do
-  source    'mount/btrfs-scrub.erb'
+################################################################################
+# dhcp
+template '/etc/dhcp/dhclient.conf' do
+  source    'dhcp/dhclient.conf.erb'
   owner     'root'
   group     'root'
-  mode      '0755'
-  notifies  :checkout, "git[btrfs-progs]"
+  mode      '0644'
 end
 
 ################################################################################
@@ -88,6 +91,22 @@ end
 execute 'mount' do
   command   'mount -a'
   action    :nothing
+end
+
+################################################################################
+# network
+template '/etc/hosts' do
+  source    'network/hosts.erb'
+  owner     'root'
+  group     'root'
+  mode      '0644'
+end
+
+template '/etc/network/interfaces' do
+  source    'network/interfaces.erb'
+  owner     'root'
+  group     'root'
+  mode      '0644'
 end
 
 ################################################################################

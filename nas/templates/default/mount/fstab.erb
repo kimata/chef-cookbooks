@@ -2,4 +2,5 @@
 
 proc           /proc    proc    nodev,noexec,nosuid                         0 0
 LABEL=root     /        ext4    relatime,discard,errors=remount-ro          0 0
-LABEL=storage  /storage btrfs   noauto,relatime,compress=lzo,space_cache    0 0
+LABEL=storage  /storage ext4    relatime                                    0 0
+LABEL=backup   /backup  ext4    relatime                                    0 0
