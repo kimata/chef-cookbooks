@@ -43,19 +43,33 @@
     unix extensions     = no
     wide links          = yes
 
-    dfree command       = /etc/samba/dfree.zsh
-
-[homes]
-    comment             = Home Directories
-    browseable          = no
-    writable            = yes
     create mask         = 0644
     directory mask      = 0755
-    
+
     vfs objects         = recycle
-    recycle:repository  = /storage/.recycle/%u
     recycle:keeptree    = yes
     recycle:touch       = yes
     recycle:versions    = yes
     recycle:maxsize     = 0
     recycle:exclude     = *.tmp
+
+[ストレージ]
+    path                = /storage
+    public              = yes
+    writable            = yes
+
+    recycle:repository  = /storage/.recycle/%u
+
+[バックアップ]
+    path                = /backup
+    public              = yes
+    writable            = yes
+
+    recycle:repository  = /backup/.recycle/%u
+
+[homes]
+    comment             = Home Directories
+    browseable          = no
+    writable            = yes
+    
+    recycle:repository  = .recycle

@@ -18,37 +18,34 @@
 # limitations under the License.
 #
 
-package 'snmpd '
-
 ################################################################################
-# btrfs
-package 'btrfs-tools'
-package 'liblzo2-dev'
-package 'libblkid-dev'
+# apcups
+package 'apcupsd'
 
-git 'btrfs-progs' do
-  repository 'git://git.kernel.org/pub/scm/linux/kernel/git/mason/btrfs-progs.git'
-  destination '/tmp/make-btrfs-progs'
-  not_if    'btrfs --version | perl -ne "exit(\$1*1000 < 200) if /Btrfs v([\d.]+)/"'
-  action    :sync
-  notifies  :run, "execute[prepare-make-btrfs-progs]"
+service 'apcups' do
+  service_name 'apcupsd'
+  supports value_for_platform(
+    'ubuntu' => {
+      'default' => [ :restart, :reload, :status ]
+    },
+  )
+  action [ :enable, :start ]
 end
 
-execute 'prepare-make-btrfs-progs' do
-  command   'apt-get --yes build-dep btrfs-tools'
-  action    :nothing
-  notifies  :run, "execute[make-btrfs-progs]"
+template '/etc/apcupsd/apcupsd.conf' do
+  source    'apcups/apcupsd.conf.erb'
+  owner     'root'
+  group     'root'
+  mode      '0644'
+  notifies  :restart, 'service[apcups]'
 end
 
-execute 'make-btrfs-progs' do
-  command   'make -C /tmp/make-btrfs-progs all install'
-  action    :nothing
-  notifies  :run, "execute[clean-make-btrfs-progs]"
-end
-
-execute 'clean-make-btrfs-progs' do
-  command   'rm -rf /tmp/make-btrfs-progs'
-  action    :nothing
+template '/etc/default/apcupsd' do
+  source    'apcups/apcupsd.erb'
+  owner     'root'
+  group     'root'
+  mode      '0644'
+  notifies  :restart, 'service[apcups]'
 end
 
 ################################################################################
@@ -69,6 +66,33 @@ template '/etc/hdparm.conf' do
   owner     'root'
   group     'root'
   mode      '0644'
+end
+
+################################################################################
+# ipmi
+package 'ipmitool'
+
+template '/etc/modules' do
+  source    'modprobe/modules.erb'
+  owner     'root'
+  group     'root'
+  mode      '0644'
+end
+
+template '/etc/modprobe.d/ipmi.conf' do
+  source    'modprobe/ipmi.conf.erb'
+  owner     'root'
+  group     'root'
+  mode      '0644'
+end
+
+################################################################################
+# locate
+template '/etc/updatedb.conf' do
+  source    'locate/updatedb.conf.erb'
+  owner     'root'
+  group     'root'
+  mode      '0440'
 end
 
 ################################################################################
@@ -155,8 +179,75 @@ template '/etc/samba/smb.conf' do
   notifies  :restart, 'service[samba]'
 end
 
-template '/etc/samba/dfree.zsh' do
-  source    'samba/dfree.zsh.erb'
+################################################################################
+# smart
+package 'smartmontools'
+
+service 'smart' do
+  service_name 'smartd'
+  supports value_for_platform(
+    'ubuntu' => {
+      'default' => [ :restart, :reload, :status ]
+    },
+  )
+  action [ :enable, :start ]
+end
+
+template '/etc/smartd.conf' do
+  source    'smart/smartd.conf.erb'
+  owner     'root'
+  group     'root'
+  mode      '0644'
+  notifies  :restart, 'service[smart]'
+end
+
+template '/etc/default/smartmontools' do
+  source    'smart/smartmontools.erb'
+  owner     'root'
+  group     'root'
+  mode      '0644'
+  notifies  :restart, 'service[smart]'
+end
+
+################################################################################
+# snmp
+package 'snmpd'
+
+service 'snmp' do
+  service_name 'snmpd'
+  supports value_for_platform(
+    'ubuntu' => {
+      'default' => [ :restart, :reload, :status ]
+    },
+  )
+  action [ :enable, :start ]
+end
+
+template '/etc/snmp/snmpd.conf' do
+  source    'snmp/snmpd.conf.erb'
+  owner     'root'
+  group     'root'
+  mode      '0644'
+  notifies  :restart, 'service[snmp]'
+end
+
+template '/etc/default/snmpd' do
+  source    'snmp/snmpd.erb'
+  owner     'root'
+  group     'root'
+  mode      '0644'
+  notifies  :restart, 'service[snmp]'
+end
+
+template '/etc/snmp/disk_temp.zsh' do
+  source    'snmp/disk_temp.zsh.erb'
+  owner     'root'
+  group     'root'
+  mode      '0755'
+end
+
+template '/etc/snmp/hard_temp.zsh' do
+  source    'snmp/hard_temp.zsh.erb'
   owner     'root'
   group     'root'
   mode      '0755'
@@ -226,8 +317,9 @@ package 'binutils'
 package 'inotify-tools'
 package 'daemontools'
 
-package 'smartmontools'
+package 'cifs-utils'
 
 package 'postfix'
+package 'mdadm'
 
 package 'ruby'
