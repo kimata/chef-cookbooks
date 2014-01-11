@@ -5,6 +5,8 @@ myhostname                  = <%= node['hostname'] %>.$mydomain
 myorigin                    = $mydomain
     
 inet_interfaces             = all
+inet_protocols              = ipv4
+
 mydestination               = $myhostname, localhost.$mydomain, $mydomain
 unknown_local_recipient_reject_code = 550
 
@@ -36,6 +38,7 @@ smtpd_banner                = $myhostname ESMTP $mail_name Ubuntu Special :-)
 smtpd_sasl_auth_enable      = yes
 smtpd_sasl_security_options = noanonymous, noplaintext
 smtpd_sasl_local_domain     = $myhostname
+smtpd_client_restrictions   = permit_mynetworks, reject_unknown_client, permit
 smtpd_recipient_restrictions= permit_mynetworks, permit_auth_destination, permit_sasl_authenticated, reject_unauth_destination
 
 mailbox_size_limit          = 0

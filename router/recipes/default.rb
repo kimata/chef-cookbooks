@@ -1,5 +1,3 @@
-
-#
 # Cookbook Name:: router
 # Recipe:: default
 # Author:: KIMATA Tetsuya <kimata@green-rabbit.net>
@@ -327,12 +325,53 @@ end
 ################################################################################
 # postfix
 package 'postfix'
+package 'libsasl2-modules'
+package 'sasl2-bin'
+
+service 'postfix' do
+  service_name 'postfix'
+  pattern 'postfix'
+  supports value_for_platform(
+    'ubuntu' => {
+      'default' => [ :restart, :reload, :status ]
+    },
+  )
+  action [ :enable, :start ]
+end
+
+service 'saslauth' do
+  service_name 'saslauthd'
+  pattern 'saslauthd'
+  supports value_for_platform(
+    'ubuntu' => {
+      'default' => [ :restart, :reload, :status ]
+    },
+  )
+  action [ :enable, :start ]
+end
 
 template '/etc/postfix/main.cf' do
-  source    'postfix/main.cf..erb'
+  source    'postfix/main.cf.erb'
   owner     'root'
   group     'root'
   mode      '0644'
+  notifies  :restart, 'service[postfix]'
+end
+
+template '/etc/postfix/smtpd.conf' do
+  source    'postfix/smtpd.conf.erb'
+  owner     'root'
+  group     'root'
+  mode      '0644'
+  notifies  :restart, 'service[postfix]'
+end
+
+template '/etc/default/saslauthd' do
+  source    'postfix/saslauthd.erb'
+  owner     'root'
+  group     'root'
+  mode      '0644'
+  notifies  :restart, 'service[saslauth]'
 end
 
 ################################################################################

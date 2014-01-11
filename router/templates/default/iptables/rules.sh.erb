@@ -75,6 +75,8 @@ run_iptables -A FROM_WAN -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport
 run_iptables -A FROM_WAN -p udp -m state --state NEW,ESTABLISHED,RELATED --dport bootpc          -j ACCEPT   # DHCP
 run_iptables -A FROM_WAN -p udp -m state --state NEW,ESTABLISHED,RELATED --dport bootps          -j ACCEPT   # DHCP
 
+run_iptables -A FROM_WAN -p udp                                          --dport 1900            -j DROP     # UPnP
+
 run_iptables -A FROM_WAN -d ${LAN_IP_RANGE}                                                      -j DROP
 
 run_iptables -A FROM_WAN -p tcp -m state --state ESTABLISHED,RELATED                             -j ACCEPT
@@ -136,7 +138,9 @@ run_iptables -A FROM_LAN -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport
 run_iptables -A FROM_LAN -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport 12865           -j ACCEPT   # Netperf
 run_iptables -A FROM_LAN -p udp -m state --state NEW,ESTABLISHED,RELATED --dport 12865           -j ACCEPT   # Netperf
 
+run_iptables -A FROM_LAN -p udp                                          --dport 1900            -j ACCEPT   # UPnP
 run_iptables -A FROM_LAN -p udp                                          --dport 9090            -j ACCEPT   # WeMo
+
 run_iptables -A FROM_LAN -p udp                                          --dport 17784           -j ACCEPT   # SQUEEZE BOX
 run_iptables -A FROM_LAN -p udp                                          --dport 3483            -j ACCEPT   # SQUEEZE BOX
 
@@ -161,6 +165,9 @@ run_iptables -A TO_LAN   -p udp -m state --state NEW,ESTABLISHED,RELATED --dport
 
 run_iptables -A TO_LAN   -p udp -m state --state NEW,ESTABLISHED,RELATED --sport 9090            -j ACCEPT   # WeMo
 run_iptables -A TO_LAN   -p tcp -m state --state NEW,ESTABLISHED,RELATED -s ${COLUMBIA_IP}       -j ACCEPT   # WeMo
+
+run_iptables -A TO_LAN   -p udp                                          --sport 3483            -j ACCEPT   # SQUEEZE BOX
+
 run_iptables -A TO_LAN   -p udp -m state --state NEW,ESTABLISHED,RELATED --dport 9               -j ACCEPT   # WOL
 
 run_iptables -A TO_LAN   -p tcp -m state --state ESTABLISHED,RELATED                             -j ACCEPT
@@ -224,16 +231,16 @@ run_iptables -A OUTPUT   -o ${WAN_IFACE}                                        
 
 ###############################################################################
 # INTERFACE
+run_iptables -A FORWARD  -i ${WAN_IFACE} -o ${LAN_IFACE}                                         -j WAN2LAN
+run_iptables -A FORWARD  -i ${LAN_IFACE} -o ${WAN_IFACE}                                         -j LAN2WAN
+run_iptables -A FORWARD  -i ${LAN_IFACE} -s ${LAN_IP_RANGE}                                      -j ACCEPT
+run_iptables -A FORWARD  -i ${WAN_IFACE} -d ${LAN_IP_RANGE}                                      -j ACCEPT
+
 run_iptables -A INPUT    -i ${LAN_IFACE}                                                         -j FROM_LAN
 run_iptables -A OUTPUT   -o ${LAN_IFACE}                                                         -j TO_LAN
 
 run_iptables -A INPUT    -i ${WAN_IFACE}                                                         -j FROM_WAN
 run_iptables -A OUTPUT   -o ${WAN_IFACE}                                                         -j TO_WAN
-
-run_iptables -A FORWARD  -i ${WAN_IFACE} -o ${LAN_IFACE}                                         -j WAN2LAN
-run_iptables -A FORWARD  -i ${LAN_IFACE} -o ${WAN_IFACE}                                         -j LAN2WAN
-run_iptables -A FORWARD  -i ${LAN_IFACE} -s ${LAN_IP_RANGE}                                      -j ACCEPT
-run_iptables -A FORWARD  -i ${WAN_IFACE} -d ${LAN_IP_RANGE}                                      -j ACCEPT
 
 run_iptables -A INPUT    -i ${LOP_IFACE}                                                         -j ACCEPT
 run_iptables -A OUTPUT   -o ${LOP_IFACE}                                                         -j ACCEPT
