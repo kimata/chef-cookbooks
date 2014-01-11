@@ -11,5 +11,5 @@ auto eth1
   iface             eth1 inet static
   address           192.168.2.1
   netmask           255.255.255.0
-  dns-domain        green-rabbit.net
+  dns-domain        <%= node['domain'] %>
   dns-nameservers   192.168.2.1

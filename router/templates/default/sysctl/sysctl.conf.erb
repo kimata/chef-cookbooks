@@ -16,12 +16,13 @@ net.ipv4.conf.all.accept_source_route = 0
 # 虚偽のエラーを無視
 net.ipv4.icmp_ignore_bogus_error_responses = 0
 
-# ライトバックを遅延させられるメモリの割合
-vm.dirty_background_ratio           = 30
-vm.dirty_ratio                      = 60
-# フラッシュする間隔 (1時間)
-vm.dirty_writeback_centisecs        = 360000
-# フラッシュされるまでの最大遅延 (1時間)
-vm.dirty_expire_centisecs           = 360000
+# フラッシュする間隔 (5分)
+vm.dirty_writeback_centisecs        = 30000
+# フラッシュされるまでの最大遅延 (30秒)
+vm.dirty_expire_centisecs           = 3000
+
+# オーバーコミット有効
+vm.overcommit_memory                = 0
+
 # パニックが発生したら1時間後にリブート
 kernel.panic                        = 3600

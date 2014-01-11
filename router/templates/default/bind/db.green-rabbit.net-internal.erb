@@ -2,7 +2,7 @@
 
 $TTL 86400  ; 1 day
 
-@ IN SOA ns.green-rabbit.net. root.green-rabbit.net. (
+@ IN SOA ns.<%= node['domain'] %>. root.<%= node['domain'] %>. (
           1 ; Serial
      604800 ; Refresh
       86400 ; Retry
@@ -10,8 +10,8 @@ $TTL 86400  ; 1 day
      604800 ; Negative Cache TTL
 )
 
-                IN NS       columbia.green-rabbit.net.
+                IN NS       <%= node['fqdn'] %>.
 columbia        A           192.168.2.1
-ns              IN CNAME    columbia
+ns              IN CNAME    <%= node['hostname'] %>
 
 

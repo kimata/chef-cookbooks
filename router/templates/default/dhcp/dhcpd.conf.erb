@@ -2,14 +2,18 @@
 
 local-address      192.168.2.1;
 
-option             domain-name "green-rabbit.net";
+option             domain-name "<%= node['domain'] %>";
 option             domain-name-servers 192.168.2.1;
 
 option             ntp-servers 192.168.2.1;
 option             time-offset 32400;
 
-default-lease-time 3600;
-max-lease-time     86400;
+option tz-posix-string code 100 = string;
+option tz-posix-string "JST-9";
+
+
+default-lease-time 86400;
+max-lease-time     864000;
 
 ddns-updates       on;
 ddns-update-style  interim;
@@ -17,7 +21,7 @@ update-static-leases on;
 use-host-decl-names on;
 ignore 		   client-updates; 
 
-zone green-rabbit.net. {
+zone <%= node['domain'] %>. {
     primary        192.168.2.1;
 }
 
@@ -35,7 +39,7 @@ subnet 192.168.2.0 netmask 255.255.255.0 {
 }
 
 host brazil {
-   hardware	   ethernet f4:6d:04:4b:b3:fc;
+   hardware	   ethernet 00:15:17:a0:5d:79;
    fixed-address   192.168.2.10;
 }
 

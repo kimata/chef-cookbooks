@@ -5,4 +5,8 @@
 hdparm -S 244 <%= drive %>
 <% end -%>
 
+if [ -e /dev/disk/by-label/backup -a -e /backup ]; then
+    mount /backup
+fi
+
 exit 0

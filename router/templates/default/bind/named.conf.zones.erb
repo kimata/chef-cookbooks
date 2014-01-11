@@ -15,9 +15,9 @@ view "internal" {
         type         	master;
         file         	"/etc/bind/db.127";
     };
-    zone "green-rabbit.net" IN {
+    zone "<%= node['domain'] %>" IN {
         type         	master;
-        file           "/var/cache/bind/db.green-rabbit.net-internal";
+        file           "/var/cache/bind/db.<%= node['domain'] %>-internal";
         allow-update 	{ localhost; };
     };
 
@@ -27,19 +27,3 @@ view "internal" {
         file         	"/var/cache/bind/db.2.168.192";
     };
 };
-
-# view "external" {
-#     match-clients { any; };
-
-#     zone "green-rabbit.net" IN {
-#         type         master;
-#         allow-update { localhost; };
-#         file         "/var/cache/bind/db.green-rabbit.net-external";
-#     };
-
-#     zone "acapulco.dyndns.org" IN {
-#         type         master;
-#         allow-update { localhost; };
-#         file         "/var/cache/bind/db.acapulco.dyndns.org-external";
-#     };
-# };

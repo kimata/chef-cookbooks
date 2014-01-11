@@ -60,6 +60,7 @@ end
 ################################################################################
 # hdparm
 package 'hdparm'
+package 'sdparm'
 
 template '/etc/hdparm.conf' do
   source    'hdparm/hdparm.conf.erb'
@@ -316,10 +317,12 @@ end
 package 'binutils'
 package 'inotify-tools'
 package 'daemontools'
-
+package 'sdparm'
 package 'cifs-utils'
 
 package 'postfix'
 package 'mdadm'
 
 package 'ruby'
+
+package 'dstat'

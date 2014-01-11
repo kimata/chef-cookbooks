@@ -1,3 +1,4 @@
+
 #
 # Cookbook Name:: router
 # Recipe:: default
@@ -17,6 +18,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+################################################################################
+# apcups
+package 'apcupsd'
+
+service 'apcups' do
+  service_name 'apcupsd'
+  supports value_for_platform(
+    'ubuntu' => {
+      'default' => [ :restart, :reload, :status ]
+    },
+  )
+  action [ :enable, :start ]
+end
+
+template '/etc/apcupsd/apcupsd.conf' do
+  source    'apcups/apcupsd.conf.erb'
+  owner     'root'
+  group     'root'
+  mode      '0644'
+  notifies  :restart, 'service[apcups]'
+end
+
+template '/etc/default/apcupsd' do
+  source    'apcups/apcupsd.erb'
+  owner     'root'
+  group     'root'
+  mode      '0644'
+  notifies  :restart, 'service[apcups]'
+end
 
 ################################################################################
 # bind
@@ -117,45 +148,6 @@ link '/var/cache/bind/db.green-rabbit.net-internal' do
 end
 
 ################################################################################
-# btrfs
-package 'btrfs-tools'
-package 'liblzo2-dev'
-package 'libblkid-dev'
-
-git 'btrfs-progs' do
-  repository 'git://git.kernel.org/pub/scm/linux/kernel/git/mason/btrfs-progs.git'
-  destination '/tmp/make-btrfs-progs'
-  not_if    'btrfs --version | perl -ne "exit(\$1*1000 < 200) if /Btrfs v([\d.]+)/"'
-  action    :sync
-  notifies  :run, "execute[prepare-make-btrfs-progs]"
-end
-
-execute 'prepare-make-btrfs-progs' do
-  command   'apt-get --yes build-dep btrfs-tools'
-  action    :nothing
-  notifies  :run, "execute[make-btrfs-progs]"
-end
-
-execute 'make-btrfs-progs' do
-  command   'make -C /tmp/make-btrfs-progs all install'
-  action    :nothing
-  notifies  :run, "execute[clean-make-btrfs-progs]"
-end
-
-execute 'clean-make-btrfs-progs' do
-  command   'rm -rf /tmp/make-btrfs-progs'
-  action    :nothing
-end
-
-template '/etc/cron.weekly/btrfs-scrub' do
-  source    'mount/btrfs-scrub.erb'
-  owner     'root'
-  group     'root'
-  mode      '0755'
-  notifies  :checkout, "git[btrfs-progs]"
-end
-
-################################################################################
 # dhcp
 package 'isc-dhcp-server'
 
@@ -185,12 +177,31 @@ template '/etc/dhcp/dhclient.conf' do
   mode      '0644'
 end
 
+template '/etc/default/isc-dhcp-server' do
+  source    'dhcp/isc-dhcp-server.erb'
+  owner     'root'
+  group     'root'
+  mode      '0644'
+end
+
 ################################################################################
 # hdparm
 package 'hdparm'
+package 'sdparm'
 
 template '/etc/hdparm.conf' do
   source    'hdparm/hdparm.conf.erb'
+  owner     'root'
+  group     'root'
+  mode      '0644'
+end
+
+################################################################################
+# ipmi
+package 'ipmitool'
+
+template '/etc/modules' do
+  source    'modprobe/modules.erb'
   owner     'root'
   group     'root'
   mode      '0644'
@@ -230,7 +241,8 @@ template '/etc/iptables/inactivate' do
 end
 
 execute 'iptables' do
-  command   '/etc/iptables/activate'
+  command   '/etc/iptables/inactivate'
+#  command   '/etc/iptables/activate'
   action    :nothing
 end
 
@@ -245,6 +257,8 @@ end
 
 ################################################################################
 # mount
+package 'lvm2'
+
 directory '/storage' do
   owner     'root'
   group     'root'
@@ -311,6 +325,17 @@ directory '/var/log/ntpstats' do
 end
 
 ################################################################################
+# postfix
+package 'postfix'
+
+template '/etc/postfix/main.cf' do
+  source    'postfix/main.cf..erb'
+  owner     'root'
+  group     'root'
+  mode      '0644'
+end
+
+################################################################################
 # samba
 package 'samba'
 
@@ -333,8 +358,83 @@ template '/etc/samba/smb.conf' do
   notifies  :restart, 'service[samba]'
 end
 
-template '/etc/samba/dfree.zsh' do
-  source    'samba/dfree.zsh.erb'
+################################################################################
+# smart
+package 'smartmontools'
+
+service 'smart' do
+  service_name 'smartd'
+  supports value_for_platform(
+    'ubuntu' => {
+      'default' => [ :restart, :reload, :status ]
+    },
+  )
+  action [ :enable, :start ]
+end
+
+template '/etc/smartd.conf' do
+  source    'smart/smartd.conf.erb'
+  owner     'root'
+  group     'root'
+  mode      '0644'
+  notifies  :restart, 'service[smart]'
+end
+
+template '/etc/default/smartmontools' do
+  source    'smart/smartmontools.erb'
+  owner     'root'
+  group     'root'
+  mode      '0644'
+  notifies  :restart, 'service[smart]'
+end
+
+################################################################################
+# snmp
+package 'snmpd'
+package 'snmp-mibs-downloader'
+
+service 'snmp' do
+  service_name 'snmpd'
+  supports value_for_platform(
+    'ubuntu' => {
+      'default' => [ :restart, :reload, :status ]
+    },
+  )
+  action [ :enable, :start ]
+end
+
+template '/etc/snmp/snmpd.conf' do
+  source    'snmp/snmpd.conf.erb'
+  owner     'root'
+  group     'root'
+  mode      '0644'
+  notifies  :restart, 'service[snmp]'
+end
+
+template '/etc/default/snmpd' do
+  source    'snmp/snmpd.erb'
+  owner     'root'
+  group     'root'
+  mode      '0644'
+  notifies  :restart, 'service[snmp]'
+end
+
+template '/etc/snmp/disk_temp.zsh' do
+  source    'snmp/disk_temp.zsh.erb'
+  owner     'root'
+  group     'root'
+  mode      '0755'
+end
+
+template '/etc/snmp/hard_temp.zsh' do
+  source    'snmp/hard_temp.zsh.erb'
+  owner     'root'
+  group     'root'
+  mode      '0755'
+end
+
+template '/etc/snmp/ups_load.zsh' do
+  source    'snmp/ups_load.zsh.erb'
   owner     'root'
   group     'root'
   mode      '0755'
@@ -426,11 +526,13 @@ package 'binutils'
 package 'inotify-tools'
 package 'daemontools'
 
-package 'smartmontools'
-
 package 'apache2'
 package 'dovecot-imapd'
-package 'postfix'
 
 package 'ruby'
+package 'mdadm'
+package 'cifs-utils'
 
+
+
+package 'dstat'

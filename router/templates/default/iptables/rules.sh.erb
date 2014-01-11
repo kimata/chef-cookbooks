@@ -102,6 +102,7 @@ run_iptables -A TO_WAN   -p udp -m state --state NEW,ESTABLISHED,RELATED --dport
 run_iptables -A TO_WAN   -p udp -m state --state NEW,ESTABLISHED,RELATED --dport bootps          -j ACCEPT   # DHCP
 run_iptables -A TO_WAN   -p udp -m state --state NEW,ESTABLISHED,RELATED --dport domain          -j ACCEPT   # DNS
 run_iptables -A TO_WAN   -p udp -m state --state NEW,ESTABLISHED,RELATED --dport ntp             -j ACCEPT   # NTP
+run_iptables -A TO_WAN   -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport 9418            -j ACCEPT   # Git
 
 run_iptables -A TO_WAN   -p tcp -m state --state ESTABLISHED,RELATED                             -j ACCEPT
 run_iptables -A TO_WAN   -p udp -m state --state ESTABLISHED,RELATED                             -j ACCEPT
@@ -130,13 +131,14 @@ run_iptables -A FROM_LAN -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport
 run_iptables -A FROM_LAN -p udp -m state --state NEW,ESTABLISHED,RELATED --dport snmp            -j ACCEPT   # SNMP
 run_iptables -A FROM_LAN -p udp -m state --state NEW,ESTABLISHED,RELATED --dport netbios-ns      -j ACCEPT   # SAMBA
 run_iptables -A FROM_LAN -p udp -m state --state NEW,ESTABLISHED,RELATED --dport netbios-dgm     -j ACCEPT   # SAMBA
+run_iptables -A FROM_LAN -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport 3551            -j ACCEPT   # APCUPS
 
 run_iptables -A FROM_LAN -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport 12865           -j ACCEPT   # Netperf
 run_iptables -A FROM_LAN -p udp -m state --state NEW,ESTABLISHED,RELATED --dport 12865           -j ACCEPT   # Netperf
 
-run_iptables -A FROM_LAN -p udp                                                --dport 17784     -j DROP   # SQUEEZE BOX
-run_iptables -A FROM_LAN -p udp                                                --dport 3483      -j DROP   # SQUEEZE BOX
-
+run_iptables -A FROM_LAN -p udp                                          --dport 9090            -j ACCEPT   # WeMo
+run_iptables -A FROM_LAN -p udp                                          --dport 17784           -j ACCEPT   # SQUEEZE BOX
+run_iptables -A FROM_LAN -p udp                                          --dport 3483            -j ACCEPT   # SQUEEZE BOX
 
 run_iptables -A FROM_LAN -p tcp -m state --state ESTABLISHED,RELATED                             -j ACCEPT
 run_iptables -A FROM_LAN -p udp -m state --state ESTABLISHED,RELATED                             -j ACCEPT
@@ -156,6 +158,10 @@ run_iptables -A TO_LAN   -p udp -m state --state NEW,ESTABLISHED,RELATED --dport
 run_iptables -A TO_LAN   -p udp -m state --state NEW,ESTABLISHED,RELATED --dport snmp            -j ACCEPT   # SNMP
 run_iptables -A TO_LAN   -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport 12865           -j ACCEPT   # Netperf
 run_iptables -A TO_LAN   -p udp -m state --state NEW,ESTABLISHED,RELATED --dport 12865           -j ACCEPT   # Netperf
+
+run_iptables -A TO_LAN   -p udp -m state --state NEW,ESTABLISHED,RELATED --sport 9090            -j ACCEPT   # WeMo
+run_iptables -A TO_LAN   -p tcp -m state --state NEW,ESTABLISHED,RELATED -s ${COLUMBIA_IP}       -j ACCEPT   # WeMo
+run_iptables -A TO_LAN   -p udp -m state --state NEW,ESTABLISHED,RELATED --dport 9               -j ACCEPT   # WOL
 
 run_iptables -A TO_LAN   -p tcp -m state --state ESTABLISHED,RELATED                             -j ACCEPT
 run_iptables -A TO_LAN   -p udp -m state --state ESTABLISHED,RELATED                             -j ACCEPT
@@ -231,6 +237,11 @@ run_iptables -A FORWARD  -i ${WAN_IFACE} -d ${LAN_IP_RANGE}                     
 
 run_iptables -A INPUT    -i ${LOP_IFACE}                                                         -j ACCEPT
 run_iptables -A OUTPUT   -o ${LOP_IFACE}                                                         -j ACCEPT
+
+if [ x$LOG = xon ]; then
+    run_iptables -A FORWARD -m limit --limit 3/minute --limit-burst 3 -j ULOG --ulog-prefix "iptables DIED(FORWARD): "
+fi
+
 
 
 ###############################################################################
