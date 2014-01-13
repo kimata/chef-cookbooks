@@ -183,6 +183,29 @@ template '/etc/default/isc-dhcp-server' do
 end
 
 ################################################################################
+# dovecot
+package 'dovecot-imapd'
+
+service 'dovecot' do
+  service_name 'dovecot'
+  pattern 'dovecot'
+  supports value_for_platform(
+    'ubuntu' => {
+      'default' => [ :restart, :reload, :status ]
+    },
+  )
+  action [ :enable, :start ]
+end
+
+template '/etc/dovecot/dovecot.conf' do
+  source    'dovecot/dovecot.conf.erb'
+  owner     'root'
+  group     'root'
+  mode      '0644'
+  notifies  :restart, 'service[dovecot]'
+end
+
+################################################################################
 # hdparm
 package 'hdparm'
 package 'sdparm'
@@ -566,7 +589,6 @@ package 'inotify-tools'
 package 'daemontools'
 
 package 'apache2'
-package 'dovecot-imapd'
 
 package 'ruby'
 package 'mdadm'
@@ -575,3 +597,5 @@ package 'cifs-utils'
 
 
 package 'dstat'
+
+#apt-get install spamassassin spamc

@@ -158,6 +158,73 @@ template '/etc/ntp.conf' do
 end
 
 ################################################################################
+# postfix
+package 'postfix'
+
+package 'postfix'
+package 'libsasl2-modules'
+package 'sasl2-bin'
+
+service 'postfix' do
+  service_name 'postfix'
+  pattern 'postfix'
+  supports value_for_platform(
+    'ubuntu' => {
+      'default' => [ :restart, :reload, :status ]
+    },
+  )
+  action [ :enable, :start ]
+end
+
+service 'saslauth' do
+  service_name 'saslauthd'
+  pattern 'saslauthd'
+  supports value_for_platform(
+    'ubuntu' => {
+      'default' => [ :restart, :reload, :status ]
+    },
+  )
+  action [ :enable, :start ]
+end
+
+template '/etc/postfix/main.cf' do
+  source    'postfix/main.cf.erb'
+  owner     'root'
+  group     'root'
+  mode      '0644'
+  notifies  :restart, 'service[postfix]'
+end
+
+template '/etc/postfix/smtpd.conf' do
+  source    'postfix/smtpd.conf.erb'
+  owner     'root'
+  group     'root'
+  mode      '0644'
+  notifies  :restart, 'service[postfix]'
+end
+
+template '/etc/default/saslauthd' do
+  source    'postfix/saslauthd.erb'
+  owner     'root'
+  group     'root'
+  mode      '0644'
+  notifies  :restart, 'service[saslauth]'
+end
+
+template '/etc/postfix/transport' do
+  source    'postfix/transport.erb'
+  owner     'root'
+  group     'root'
+  mode      '0644'
+  notifies  :run, 'execute[postmap]'
+end
+
+execute 'postmap' do
+  command   'postmap /etc/postfix/transport'
+  action    :nothing
+end
+
+################################################################################
 # samba
 package 'samba'
 
@@ -320,7 +387,7 @@ package 'daemontools'
 package 'sdparm'
 package 'cifs-utils'
 
-package 'postfix'
+
 package 'mdadm'
 
 package 'ruby'
