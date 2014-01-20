@@ -111,7 +111,7 @@ run_iptables -A TO_WAN   -p tcp -m state --state ESTABLISHED,RELATED            
 run_iptables -A TO_WAN   -p udp -m state --state ESTABLISHED,RELATED                             -j ACCEPT
 
 if [ x$LOG = xon ]; then
-    run_iptables -A TO_WAN -m limit --limit 3/minute --limit-burst 3 -j ULOG --ulog-prefix "iptables DIED(TO_WAN): "
+    run_iptables -A TO_WAN -m limit --limit 3/minute --limit-burst 3 -j ULOG --ulog-prefix "iptables DIED(TO_WAN  ): "
 fi
 
 ###############################################################################
@@ -175,7 +175,7 @@ run_iptables -A TO_LAN   -p tcp -m state --state ESTABLISHED,RELATED            
 run_iptables -A TO_LAN   -p udp -m state --state ESTABLISHED,RELATED                             -j ACCEPT
 
 if [ x$LOG = xon ]; then
-    run_iptables -A TO_LAN -m limit --limit 3/minute --limit-burst 3 -j ULOG --ulog-prefix "iptables DIED(TO_LAN): "
+    run_iptables -A TO_LAN -m limit --limit 3/minute --limit-burst 3 -j ULOG --ulog-prefix "iptables DIED(TO_LAN  ): "
 fi
 
 ###############################################################################
