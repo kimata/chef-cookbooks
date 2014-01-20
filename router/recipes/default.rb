@@ -421,11 +421,11 @@ template '/etc/samba/smb.conf' do
 end
 
 ################################################################################
-# smart
+# smartmontools
 package 'smartmontools'
 
-service 'smart' do
-  service_name 'smartd'
+service 'smartmontools' do
+  service_name 'smartmontools'
   supports value_for_platform(
     'ubuntu' => {
       'default' => [ :restart, :reload, :status ]
@@ -439,7 +439,7 @@ template '/etc/smartd.conf' do
   owner     'root'
   group     'root'
   mode      '0644'
-  notifies  :restart, 'service[smart]'
+  notifies  :restart, 'service[smartmontools]'
 end
 
 template '/etc/default/smartmontools' do
@@ -447,7 +447,7 @@ template '/etc/default/smartmontools' do
   owner     'root'
   group     'root'
   mode      '0644'
-  notifies  :restart, 'service[smart]'
+  notifies  :restart, 'service[smartmontools]'
 end
 
 ################################################################################
@@ -510,6 +510,12 @@ package 'openssh-server'
 service 'ssh' do
   service_name 'ssh'
   pattern 'sshd'
+  case node["platform"]
+  when "ubuntu"
+    if node["platform_version"].to_f >= 13.10
+      provider Chef::Provider::Service::Upstart
+    end
+  end
   supports value_for_platform(
     'ubuntu' => {
       'default' => [ :restart, :reload, :status ]
@@ -562,25 +568,25 @@ end
 
 ################################################################################
 # ulog
-package 'ulogd'
+# package 'ulogd'
 
-service 'ulog' do
-  service_name 'ulogd'
-  supports value_for_platform(
-    'ubuntu' => {
-      'default' => [ :restart, :reload, :status ]
-    },
-  )
-  action :nothing
-end
+# service 'ulog' do
+#   service_name 'ulogd'
+#   supports value_for_platform(
+#     'ubuntu' => {
+#       'default' => [ :restart, :reload, :status ]
+#     },
+#   )
+#   action :nothing
+# end
 
-template '/etc/ulogd.conf' do
-  source    'ulog/ulogd.conf.erb'
-  owner     'root'
-  group     'root'
-  mode      '0644'
-  notifies  :restart, 'service[ulog]'
-end
+# template '/etc/ulogd.conf' do
+#   source    'ulog/ulogd.conf.erb'
+#   owner     'root'
+#   group     'root'
+#   mode      '0644'
+#   notifies  :restart, 'service[ulog]'
+# end
 
 ################################################################################
 # miscellaneous
