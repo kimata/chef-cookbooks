@@ -107,6 +107,9 @@ run_iptables -A TO_WAN   -p udp -m state --state NEW,ESTABLISHED,RELATED --dport
 run_iptables -A TO_WAN   -p udp -m state --state NEW,ESTABLISHED,RELATED --dport ntp             -j ACCEPT   # NTP
 run_iptables -A TO_WAN   -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport 9418            -j ACCEPT   # Git
 
+run_iptables -A TO_WAN   -p udp                                          --sport 1900            -j DROP     # SQUEEZE BOX
+run_iptables -A TO_WAN   -p udp                                          --dport 3483            -j DROP     # SQUEEZE BOX
+
 run_iptables -A TO_WAN   -p tcp -m state --state ESTABLISHED,RELATED                             -j ACCEPT
 run_iptables -A TO_WAN   -p udp -m state --state ESTABLISHED,RELATED                             -j ACCEPT
 
@@ -144,6 +147,9 @@ run_iptables -A FROM_LAN -p udp                                          --dport
 
 run_iptables -A FROM_LAN -p udp                                          --dport 17784           -j ACCEPT   # SQUEEZE BOX
 run_iptables -A FROM_LAN -p udp                                          --dport 3483            -j ACCEPT   # SQUEEZE BOX
+run_iptables -A FROM_LAN -p tcp -m state --state NEW,ESTABLISHED,RELATED --sport 9000            -j ACCEPT   # SQUEEZE BOX
+
+run_iptables -A FROM_LAN -p udp                                          --sport 4114            -j DROP     # OMRON UPS
 
 run_iptables -A FROM_LAN -p tcp -m state --state ESTABLISHED,RELATED                             -j ACCEPT
 run_iptables -A FROM_LAN -p udp -m state --state ESTABLISHED,RELATED                             -j ACCEPT
@@ -167,6 +173,7 @@ run_iptables -A TO_LAN   -p udp -m state --state NEW,ESTABLISHED,RELATED --dport
 run_iptables -A TO_LAN   -p udp -m state --state NEW,ESTABLISHED,RELATED --sport 9090            -j ACCEPT   # WeMo
 run_iptables -A TO_LAN   -p tcp -m state --state NEW,ESTABLISHED,RELATED -s ${COLUMBIA_IP}       -j ACCEPT   # WeMo
 
+run_iptables -A TO_LAN   -p udp                                          --sport 1900            -j ACCEPT   # SQUEEZE BOX
 run_iptables -A TO_LAN   -p udp                                          --sport 3483            -j ACCEPT   # SQUEEZE BOX
 
 run_iptables -A TO_LAN   -p udp -m state --state NEW,ESTABLISHED,RELATED --dport 9               -j ACCEPT   # WOL
@@ -184,7 +191,7 @@ run_iptables -A WAN2LAN  -p tcp -m state --state NEW,ESTABLISHED,RELATED --sport
 run_iptables -A WAN2LAN  -p tcp -m state --state NEW,ESTABLISHED,RELATED --sport https           -j ACCEPT   # HTTP
 run_iptables -A WAN2LAN  -p tcp -m state --state NEW,ESTABLISHED,RELATED --sport 843             -j ACCEPT   # Adobe Flash
 run_iptables -A WAN2LAN  -p tcp -m state --state NEW,ESTABLISHED,RELATED --sport 5223            -j ACCEPT   # Apple Push Notification Service
-run_iptables -A WAN2LAN  -p tcp -m state --state NEW,ESTABLISHED,RELATED --sport 9000            -j ACCEPT   # Logitech Media Server
+run_iptables -A WAN2LAN  -p tcp -m state --state NEW,ESTABLISHED,RELATED --sport 9000            -j ACCEPT   # SQUEEZE BOX
 
 run_iptables -A WAN2LAN  -p tcp                                      --sport 5222                -j DROP     # Google Talk
 run_iptables -A WAN2LAN  -p tcp                                      --sport 2533                -j DROP     # Sniffer Server 
@@ -197,7 +204,7 @@ fi
 # LAN -> WAN [TCP,UDP]
 run_iptables -A LAN2WAN  -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport http            -j ACCEPT   # HTTP
 run_iptables -A LAN2WAN  -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport https           -j ACCEPT   # HTTP
-run_iptables -A LAN2WAN  -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport 9000            -j ACCEPT   # Logitech Media Server
+run_iptables -A LAN2WAN  -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport 9000            -j ACCEPT   # SQUEEZE BOX
 run_iptables -A LAN2WAN  -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport 5223            -j ACCEPT   # Apple Push Notification Service
 run_iptables -A LAN2WAN  -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport 843             -j ACCEPT   # Adobe Flash
 
