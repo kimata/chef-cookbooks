@@ -76,6 +76,8 @@ run_iptables -A FROM_WAN -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport
 run_iptables -A FROM_WAN -p udp -m state --state NEW,ESTABLISHED,RELATED --dport bootpc          -j ACCEPT   # DHCP
 run_iptables -A FROM_WAN -p udp -m state --state NEW,ESTABLISHED,RELATED --dport bootps          -j ACCEPT   # DHCP
 
+run_iptables -A FROM_WAN -p igmp                                                                 -j ACCEPT   # IGMP
+
 run_iptables -A FROM_WAN -p udp                                          --dport 1900            -j DROP     # UPnP
 
 run_iptables -A FROM_WAN -d ${LAN_IP_RANGE}                                                      -j DROP
@@ -106,6 +108,8 @@ run_iptables -A TO_WAN   -p udp -m state --state NEW,ESTABLISHED,RELATED --dport
 run_iptables -A TO_WAN   -p udp -m state --state NEW,ESTABLISHED,RELATED --dport domain          -j ACCEPT   # DNS
 run_iptables -A TO_WAN   -p udp -m state --state NEW,ESTABLISHED,RELATED --dport ntp             -j ACCEPT   # NTP
 run_iptables -A TO_WAN   -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport 9418            -j ACCEPT   # Git
+
+run_iptables -A TO_WAN   -p igmp                                                                 -j ACCEPT   # IGMP
 
 run_iptables -A TO_WAN   -p udp                                          --sport 1900            -j DROP     # SQUEEZE BOX
 run_iptables -A TO_WAN   -p udp                                          --dport 3483            -j DROP     # SQUEEZE BOX
@@ -140,14 +144,16 @@ run_iptables -A FROM_LAN -p udp -m state --state NEW,ESTABLISHED,RELATED --dport
 run_iptables -A FROM_LAN -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport 3551            -j ACCEPT   # APCUPS
 
 run_iptables -A FROM_LAN -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport 12865           -j ACCEPT   # Netperf
-run_iptables -A FROM_LAN -p udp -m state --state NEW,ESTABLISHED,RELATED --dport 12865           -j ACCEPT   # Netperf
+run_iptables -A FROM_LAN -p udp                                          --dport 12865           -j ACCEPT   # Netperf
 
 run_iptables -A FROM_LAN -p udp                                          --dport 1900            -j ACCEPT   # UPnP
 run_iptables -A FROM_LAN -p udp                                          --dport 9090            -j ACCEPT   # WeMo
 
 run_iptables -A FROM_LAN -p udp                                          --dport 17784           -j ACCEPT   # SQUEEZE BOX
+run_iptables -A FROM_LAN -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport 3483            -j ACCEPT   # SQUEEZE BOX
 run_iptables -A FROM_LAN -p udp                                          --dport 3483            -j ACCEPT   # SQUEEZE BOX
-run_iptables -A FROM_LAN -p tcp -m state --state NEW,ESTABLISHED,RELATED --sport 9000            -j ACCEPT   # SQUEEZE BOX
+run_iptables -A FROM_LAN -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport 9000            -j ACCEPT   # SQUEEZE BOX
+
 
 run_iptables -A FROM_LAN -p udp                                          --sport 4114            -j DROP     # OMRON UPS
 
@@ -192,12 +198,13 @@ run_iptables -A WAN2LAN  -p tcp -m state --state NEW,ESTABLISHED,RELATED --sport
 run_iptables -A WAN2LAN  -p tcp -m state --state NEW,ESTABLISHED,RELATED --sport 843             -j ACCEPT   # Adobe Flash
 run_iptables -A WAN2LAN  -p tcp -m state --state NEW,ESTABLISHED,RELATED --sport 5223            -j ACCEPT   # Apple Push Notification Service
 run_iptables -A WAN2LAN  -p tcp -m state --state NEW,ESTABLISHED,RELATED --sport 9000            -j ACCEPT   # SQUEEZE BOX
+run_iptables -A WAN2LAN  -p tcp -m state --state NEW,ESTABLISHED,RELATED --sport 5228            -j ACCEPT   # Google Play
 
 run_iptables -A WAN2LAN  -p tcp                                      --sport 5222                -j DROP     # Google Talk
 run_iptables -A WAN2LAN  -p tcp                                      --sport 2533                -j DROP     # Sniffer Server 
 
 if [ x$LOG = xon ]; then
-    run_iptables -A WAN2LAN -m limit --limit 3/minute --limit-burst 3 -j ULOG --ulog-prefix "iptables DIED(WAN2LAN): "
+    run_iptables -A WAN2LAN -m limit --limit 3/minute --limit-burst 3 -j ULOG --ulog-prefix "iptables DIED(WAN2LAN ): "
 fi
 
 ###############################################################################
@@ -214,11 +221,15 @@ run_iptables -A LAN2WAN  -p udp                                          --dport
 
 run_iptables -A LAN2WAN  -p tcp                                          --dport http            -j DROP     # HTTP (othe state)
 
+if [ x$LOG = xon ]; then
+   run_iptables -A LAN2WAN  -p tcp -m state --state INVALID           -j ULOG --ulog-prefix "iptables INVALID(LAN2WAN ): "
+fi
+
 run_iptables -A LAN2WAN  -p tcp -m state --state ESTABLISHED,RELATED                             -j ACCEPT
 run_iptables -A LAN2WAN  -p udp -m state --state ESTABLISHED,RELATED                             -j ACCEPT
 
 if [ x$LOG = xon ]; then
-    run_iptables -A LAN2WAN -m limit --limit 3/minute --limit-burst 3 -j ULOG --ulog-prefix "iptables DIED(LAN2WAN): "
+    run_iptables -A LAN2WAN -m limit --limit 3/minute --limit-burst 3 -j ULOG --ulog-prefix "iptables DIED(LAN2WAN ): "
 fi
 
 ###############################################################################
@@ -256,8 +267,6 @@ run_iptables -A OUTPUT   -o ${LOP_IFACE}                                        
 if [ x$LOG = xon ]; then
     run_iptables -A FORWARD -m limit --limit 3/minute --limit-burst 3 -j ULOG --ulog-prefix "iptables DIED(FORWARD): "
 fi
-
-
 
 ###############################################################################
 # echo "Press Ctrl+C, if you really want to set this rule."
