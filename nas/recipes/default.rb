@@ -160,8 +160,6 @@ end
 ################################################################################
 # postfix
 package 'postfix'
-
-package 'postfix'
 package 'libsasl2-modules'
 package 'sasl2-bin'
 
@@ -384,7 +382,6 @@ end
 package 'binutils'
 package 'inotify-tools'
 package 'daemontools'
-package 'sdparm'
 package 'cifs-utils'
 
 
