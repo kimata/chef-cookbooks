@@ -20,6 +20,11 @@ net.ipv4.conf.all.accept_source_route = 0
 # 虚偽のエラーを無視
 net.ipv4.icmp_ignore_bogus_error_responses = 0
 
+net.core.rmem_default = 262144
+net.core.rmem_max = 4194304
+net.core.wmem_default = 262144
+net.core.wmem_max = 1048576
+
 # フラッシュする間隔 (5分)
 vm.dirty_writeback_centisecs        = 30000
 # フラッシュされるまでの最大遅延 (30秒)

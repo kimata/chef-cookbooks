@@ -99,8 +99,8 @@ end
 ################################################################################
 # mount
 directory '/storage' do
-  owner     'root'
-  group     'root'
+  owner     'kimata'
+  group     'kimata'
   mode      '0755'
   action    :create
 end

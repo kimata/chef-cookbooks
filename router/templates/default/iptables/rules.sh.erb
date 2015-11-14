@@ -41,7 +41,7 @@ run_iptables -N SSH
 run_iptables -N SSH_ATTACK
 run_iptables -A SSH_ATTACK -m limit --limit 3/minute --limit-burst 3 -j ULOG --ulog-prefix "iptables DIED(SSH_ATTACK): "
 run_iptables -A SSH_ATTACK -m recent --name SSH_ATTACK --set
-run_iptables -A SSH -p tcp --syn -m recent --name SSH_ATTACK --rcheck --seconds 864000           -j DROP
+## run_iptables -A SSH -p tcp --syn -m recent --name SSH_ATTACK --rcheck --seconds 864000           -j DROP
 run_iptables -A SSH -p tcp --syn -m recent --name SSH_CONN --rcheck --seconds 60 --hitcount 3    -j SSH_ATTACK
 run_iptables -A SSH -p tcp --syn -m recent --name SSH_CONN --set                                 -j ACCEPT
 run_iptables -A SSH -p tcp -m state --state NEW,ESTABLISHED,RELATED                              -j ACCEPT   # SSH
@@ -78,9 +78,9 @@ run_iptables -A FROM_WAN -p udp -m state --state NEW,ESTABLISHED,RELATED --dport
 
 run_iptables -A FROM_WAN -p igmp                                                                 -j ACCEPT   # IGMP
 
-run_iptables -A FROM_WAN -p udp                                          --dport 1900            -j DROP     # UPnP
+## run_iptables -A FROM_WAN -p udp                                          --dport 1900            -j DROP     # UPnP
 
-run_iptables -A FROM_WAN -d ${LAN_IP_RANGE}                                                      -j DROP
+## run_iptables -A FROM_WAN -d ${LAN_IP_RANGE}                                                      -j DROP
 
 run_iptables -A FROM_WAN -p tcp -m state --state ESTABLISHED,RELATED                             -j ACCEPT
 run_iptables -A FROM_WAN -p udp -m state --state ESTABLISHED,RELATED                             -j ACCEPT
@@ -111,8 +111,8 @@ run_iptables -A TO_WAN   -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport
 
 run_iptables -A TO_WAN   -p igmp                                                                 -j ACCEPT   # IGMP
 
-run_iptables -A TO_WAN   -p udp                                          --sport 1900            -j DROP     # SQUEEZE BOX
-run_iptables -A TO_WAN   -p udp                                          --dport 3483            -j DROP     # SQUEEZE BOX
+## run_iptables -A TO_WAN   -p udp                                          --sport 1900            -j DROP     # SQUEEZE BOX
+## run_iptables -A TO_WAN   -p udp                                          --dport 3483            -j DROP     # SQUEEZE BOX
 
 run_iptables -A TO_WAN   -p tcp -m state --state ESTABLISHED,RELATED                             -j ACCEPT
 run_iptables -A TO_WAN   -p udp -m state --state ESTABLISHED,RELATED                             -j ACCEPT
@@ -136,11 +136,12 @@ run_iptables -A FROM_LAN -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport
 run_iptables -A FROM_LAN -p udp -m state --state NEW,ESTABLISHED,RELATED --dport ntp             -j ACCEPT   # NTP
 run_iptables -A FROM_LAN -p udp -m state --state NEW,ESTABLISHED,RELATED --dport bootpc          -j ACCEPT   # DHCP
 run_iptables -A FROM_LAN -p udp -m state --state NEW,ESTABLISHED,RELATED --dport bootps          -j ACCEPT   # DHCP
+run_iptables -A FROM_LAN -p udp -m state --state NEW,ESTABLISHED,RELATED --dport loc-srv         -j ACCEPT   # SAMBA
+run_iptables -A FROM_LAN -p udp -m state --state NEW,ESTABLISHED,RELATED --dport netbios-ns      -j ACCEPT   # SAMBA
+run_iptables -A FROM_LAN -p udp -m state --state NEW,ESTABLISHED,RELATED --dport netbios-dgm     -j ACCEPT   # SAMBA
 run_iptables -A FROM_LAN -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport netbios-ssn     -j ACCEPT   # SAMBA
 run_iptables -A FROM_LAN -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport microsoft-ds    -j ACCEPT   # SAMBA
 run_iptables -A FROM_LAN -p udp -m state --state NEW,ESTABLISHED,RELATED --dport snmp            -j ACCEPT   # SNMP
-run_iptables -A FROM_LAN -p udp -m state --state NEW,ESTABLISHED,RELATED --dport netbios-ns      -j ACCEPT   # SAMBA
-run_iptables -A FROM_LAN -p udp -m state --state NEW,ESTABLISHED,RELATED --dport netbios-dgm     -j ACCEPT   # SAMBA
 run_iptables -A FROM_LAN -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport 3551            -j ACCEPT   # APCUPS
 
 run_iptables -A FROM_LAN -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport 12865           -j ACCEPT   # Netperf
@@ -155,7 +156,7 @@ run_iptables -A FROM_LAN -p udp                                          --dport
 run_iptables -A FROM_LAN -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport 9000            -j ACCEPT   # SQUEEZE BOX
 
 
-run_iptables -A FROM_LAN -p udp                                          --sport 4114            -j DROP     # OMRON UPS
+## run_iptables -A FROM_LAN -p udp                                          --sport 4114            -j DROP     # OMRON UPS
 
 run_iptables -A FROM_LAN -p tcp -m state --state ESTABLISHED,RELATED                             -j ACCEPT
 run_iptables -A FROM_LAN -p udp -m state --state ESTABLISHED,RELATED                             -j ACCEPT
@@ -172,6 +173,8 @@ run_iptables -A TO_LAN   -p udp -m state --state NEW,ESTABLISHED,RELATED --dport
 run_iptables -A TO_LAN   -p udp -m state --state NEW,ESTABLISHED,RELATED --dport bootps          -j ACCEPT   # DHCP
 run_iptables -A TO_LAN   -p udp -m state --state NEW,ESTABLISHED,RELATED --dport netbios-ns      -j ACCEPT   # SAMBA
 run_iptables -A TO_LAN   -p udp -m state --state NEW,ESTABLISHED,RELATED --dport netbios-dgm     -j ACCEPT   # SAMBA
+run_iptables -A TO_LAN   -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport netbios-ssn     -j ACCEPT   # SAMBA
+run_iptables -A TO_LAN   -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport microsoft-ds    -j ACCEPT   # SAMBA
 run_iptables -A TO_LAN   -p udp -m state --state NEW,ESTABLISHED,RELATED --dport snmp            -j ACCEPT   # SNMP
 run_iptables -A TO_LAN   -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport 12865           -j ACCEPT   # Netperf
 run_iptables -A TO_LAN   -p udp -m state --state NEW,ESTABLISHED,RELATED --dport 12865           -j ACCEPT   # Netperf
@@ -200,8 +203,8 @@ run_iptables -A WAN2LAN  -p tcp -m state --state NEW,ESTABLISHED,RELATED --sport
 run_iptables -A WAN2LAN  -p tcp -m state --state NEW,ESTABLISHED,RELATED --sport 9000            -j ACCEPT   # SQUEEZE BOX
 run_iptables -A WAN2LAN  -p tcp -m state --state NEW,ESTABLISHED,RELATED --sport 5228            -j ACCEPT   # Google Play
 
-run_iptables -A WAN2LAN  -p tcp                                      --sport 5222                -j DROP     # Google Talk
-run_iptables -A WAN2LAN  -p tcp                                      --sport 2533                -j DROP     # Sniffer Server 
+## run_iptables -A WAN2LAN  -p tcp                                      --sport 5222                -j DROP     # Google Talk
+## run_iptables -A WAN2LAN  -p tcp                                      --sport 2533                -j DROP     # Sniffer Server 
 
 if [ x$LOG = xon ]; then
     run_iptables -A WAN2LAN -m limit --limit 3/minute --limit-burst 3 -j ULOG --ulog-prefix "iptables DIED(WAN2LAN ): "
@@ -215,11 +218,11 @@ run_iptables -A LAN2WAN  -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport
 run_iptables -A LAN2WAN  -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport 5223            -j ACCEPT   # Apple Push Notification Service
 run_iptables -A LAN2WAN  -p tcp -m state --state NEW,ESTABLISHED,RELATED --dport 843             -j ACCEPT   # Adobe Flash
 
-run_iptables -A LAN2WAN  -p tcp                                          --dport 5222            -j DROP     # Google Talk
-run_iptables -A LAN2WAN  -p udp                                          --dport snmp            -j DROP     # SNMP
-run_iptables -A LAN2WAN  -p udp                                          --dport 3544            -j DROP     # Teredo
+## run_iptables -A LAN2WAN  -p tcp                                          --dport 5222            -j DROP     # Google Talk
+## run_iptables -A LAN2WAN  -p udp                                          --dport snmp            -j DROP     # SNMP
+## run_iptables -A LAN2WAN  -p udp                                          --dport 3544            -j DROP     # Teredo
 
-run_iptables -A LAN2WAN  -p tcp                                          --dport http            -j DROP     # HTTP (othe state)
+## run_iptables -A LAN2WAN  -p tcp                                          --dport http            -j DROP     # HTTP (othe state)
 
 if [ x$LOG = xon ]; then
    run_iptables -A LAN2WAN  -p tcp -m state --state INVALID           -j ULOG --ulog-prefix "iptables INVALID(LAN2WAN ): "

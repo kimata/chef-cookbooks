@@ -17,8 +17,8 @@ run_iptables -F
 run_iptables -X
 run_iptables -t nat -F
 
-run_iptables -P INPUT   DROP
-run_iptables -P OUTPUT  DROP
-run_iptables -P FORWARD DROP
+run_iptables -P INPUT   ACCEPT
+run_iptables -P OUTPUT  ACCEPT
+run_iptables -P FORWARD ACCEPT
 
 source `dirname $0`/rules.sh

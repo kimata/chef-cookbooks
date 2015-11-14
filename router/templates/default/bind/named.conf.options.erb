@@ -17,24 +17,25 @@ options {
     allow-transfer  { local-area; };
 
     version         "Ubuntu Special :-)";
-    forwarders      { 192.168.129.1; };
-#    forwarders      { 129.250.35.250; 129.250.35.251; };
+#    forwarders      { 192.168.129.1; };
+    forwarders      { 129.250.35.250; 129.250.35.251; };
 #    forwarders      { 8.8.8.8; 8.8.4.4; };
+#    forwarders      { 220.220.248.1; 220.220.248.9; };
 #    forwarders      { 192.168.10.1; };
 
     forward         only;
 
     root-delegation-only;
 
-#    dnssec-enable   yes;
     dnssec-enable   no;
     dnssec-validation no;
-    dnssec-lookaside auto;
-
-#    max-udp-size    512;
-#    edns-udp-size   512;
+    dnssec-lookaside no;
 
     auth-nxdomain   no;
+};
+
+server 0.0.0.0/0 {
+    edns no;
 };
 
 logging {
